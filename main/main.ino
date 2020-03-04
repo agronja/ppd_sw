@@ -17,17 +17,17 @@ const int LED_PIN = 12;
 const int NUM_LEDS = 32;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
-#define VS1053_RESET   -1
-#define VS1053_CS       6     // VS1053 chip select pin (output)
-#define VS1053_DCS     10     // VS1053 Data/command select pin (output)
-#define CARDCS          5     // Card chip select pin
+#define VS1053_RESET   -1       // unused
+#define VS1053_CS       11     // VS1053 chip select pin (output)
+#define VS1053_DCS     13     // VS1053 Data/command select pin (output)
+#define CARDCS          10     // Card chip select pin
 // DREQ should be an Int pin *if possible* (not possible on 32u4)
-#define VS1053_DREQ     9     // VS1053 Data request, ideally an Interrupt pin
+#define VS1053_DREQ     12     // VS1053 Data request, ideally an Interrupt pin
 
 
 #define SECOND 1000
 
-Adafruit_VS1053_FilePlayer musicPlayer = 
+Adafruit_VS1053_FilePlayer musicPlayer =
   Adafruit_VS1053_FilePlayer(VS1053_RESET, VS1053_CS, VS1053_DCS, VS1053_DREQ, CARDCS);
 
 SdFat SD; //VS1053 lib requires a global SD object because it uses the old SD lib
@@ -62,14 +62,14 @@ void setup() {
   pinMode(SOUND_BUTTON, INPUT_PULLUP);
   pinMode(LIGHT_BUTTON, INPUT_PULLUP);
   pinMode(DONE_PIN, OUTPUT);
-  
-  
+
+
   randomSeed(analogRead(0));
 
    if (digitalRead(RESET_BUTTON) == LOW) {
     configuration();
-    
-  } 
+
+  }
 //  char buff[32];
 //  getProp("interval", buff, 32);
 //  interval = atoi(buff);
@@ -78,8 +78,8 @@ void setup() {
 //    done();
 //  }
 
-  
-   
+
+
 //   Serial.begin(9600);
 //   while ( ! Serial ) { delay( 1 ); }
 //
@@ -104,8 +104,8 @@ void setup() {
 //    done();
 //  }
 
-  
-  
+
+
   if (! musicPlayer.begin()) { // initialise the music player
      Serial.println(F("Couldn't find VS1053, do you have the right pins defined?"));
      while (1);
@@ -121,19 +121,19 @@ void setup() {
     SD.ls();
   }
   Serial.println("SD OK!");
-  
+
   blinkAllLights (0, 255, 0, 500);
 
   musicPlayer.setVolume(2,2);
   musicPlayer.useInterrupt(VS1053_FILEPLAYER_PIN_INT);  // DREQ int
-  
-  
+
+
 
   loadSoundAndPatternNames ();
- 
+
   go();
-  
-  
+
+
 }
 
 void loop() {
@@ -151,7 +151,7 @@ void go() {
   unsigned long actionStart;
 
   struct pattern myPattern;
-      
+
   bool goSound = false;
   bool goLights = false;
 
@@ -171,16 +171,16 @@ void go() {
     patternIndex = random(0,numPatternFiles);
     if (!loadPattern (patternFiles[patternIndex], myPattern))
     {
-       
+
     }
   }
 
   if (goSound) {
     soundIndex = random(0, numSoundFiles);
-    
+
     if (!musicPlayer.startPlayingFile(soundFiles[soundIndex]))
     {
-       
+
     }
   }
 
@@ -197,7 +197,7 @@ void go() {
   {
     musicPlayer.stopPlaying();
   }
-  
+
   //setProp("index", String(0));
 
   done();
@@ -221,7 +221,7 @@ void setAllLights (int r, int g, int b) {
 }
 
 void setStatusLights(int r, int g, int b, int level) {
-  for (int i = 0; i < 4; i++) {  
+  for (int i = 0; i < 4; i++) {
     for (int j = 0; j < level; j++) {
       strip.setPixelColor((i*NUM_LEDS/4) + j, r, g, b); //pixel num, r, g, b
     }
@@ -270,9 +270,9 @@ void configInterval() {
   char buff[32];
   getProp("interval", buff, 32);
   interval = atoi(buff);
-  
+
   setStatusLights(255, 0, 0, interval);
-  
+
   unsigned long start = millis();
   while (HIGH == digitalRead(RESET_BUTTON)) {
     if (millis() - start >= 3 * SECOND) {
@@ -295,7 +295,7 @@ void configLights() {
   getProp("light", buff, 32);
   brightness = atoi(buff);
   setStatusLights(0, 255, 255, brightness);
-  
+
   while (millis() - start < 5 * SECOND) {
     if (digitalRead(LIGHT_BUTTON) == LOW) {
       start = millis();
@@ -351,11 +351,11 @@ void getProp(char * key, char * buff, unsigned len) {
         ch = myFile.read();
         buff[index++] = ch;
       }while ('\n' != ch && index < len);
-      
-     
-      buff[index - 1] = '\0';  
+
+
+      buff[index - 1] = '\0';
     }
-    
+
     myFile.close ();
   }
 }
@@ -370,7 +370,7 @@ void setProp(char * key, char * val) {
   if (myFile.open (fullName, FILE_WRITE))
   {
     myFile.print(val);
-    
+
     myFile.close ();
   }
 }
@@ -380,10 +380,10 @@ void loadSoundAndPatternNames ()
   SdFile myFile;
   char buff[16];
   int index;
-  
+
   numSoundFiles = 0;
   numPatternFiles = 0;
-  
+
   //count entries on SD card
   SD.chdir ();
   while (myFile.openNext(SD.vwd(), O_READ))
@@ -398,13 +398,13 @@ void loadSoundAndPatternNames ()
         numSoundFiles++;
       }
     }
-    
+
     memset(buff, 0, 16);
     myFile.close();
   }
 
   numSoundFiles--; //not including sound debugging song
-  
+
   // get file names
 
   SD.chdir ();
@@ -412,7 +412,7 @@ void loadSoundAndPatternNames ()
   {
     free (soundFiles);
   }
-  
+
   soundFiles = (char **) malloc (numSoundFiles * sizeof(char *));
   for (int i = 0; i < numSoundFiles; i++)
   {
@@ -429,27 +429,27 @@ void loadSoundAndPatternNames ()
     {
        myFile.getSFN (buff);
        upperCase (buff, 16);
-       
+
        //Debugging song, don't worry about it.
        if (0 != strcmp (buff, "SEAN.MP3") && NULL != strstr(buff, ".MP3"))
-       {  
+       {
            strncpy (soundFiles[index++], buff, 16);
            //Serial.println(String(buff) + " is available to play");
        }
     }
-    
+
     myFile.close();
   }
 
   SD.chdir("/patterns");
-  
+
   while (myFile.openNext(SD.vwd(), O_READ))
   {
     if (!myFile.isSubDir() && !myFile.isHidden())
     {
-      numPatternFiles++; 
+      numPatternFiles++;
     }
-    
+
     myFile.close();
   }
 
@@ -462,14 +462,14 @@ void loadSoundAndPatternNames ()
   {
     free(patternFiles);
   }
-  
+
   patternFiles = (char **) malloc (numPatternFiles *sizeof(char *));
   for (int i = 0; i < numPatternFiles; i++)
   {
     patternFiles[i] = (char *) malloc (16 * sizeof (char));
   }
   index = 0;
-  
+
   // get file names
   while (myFile.openNext(SD.vwd(), O_READ))
   {
@@ -481,12 +481,12 @@ void loadSoundAndPatternNames ()
       //Serial.println(String(buff) + " is available to use");
 
     }
-    
+
     myFile.close();
   }
-  
+
   SD.chdir();
-  
+
 }
 
 boolean loadPattern (char * fileName, struct pattern &myPattern)
@@ -496,9 +496,9 @@ boolean loadPattern (char * fileName, struct pattern &myPattern)
   char fullName[26];
   char buff[32];
   int index;
-  
+
   myPattern.length = 0;
-  
+
   sprintf (fullName, "/patterns/%s", fileName);
 
   if (myFile.open (fullName))
@@ -508,20 +508,20 @@ boolean loadPattern (char * fileName, struct pattern &myPattern)
       index = 0;
       memset(buff, 0, sizeof(buff));
       while ('\n' != (buff[index++] = myFile.read()) && index < 32);
-     
+
       buff[index - 1] = '\0';
-      
+
       strncpy (myPattern.lines[myPattern.length++], buff, 32);
       //Serial.println (myPattern.lines[myPattern.length - 1]);
     }
-    
+
     myFile.close ();
   }
   else
   {
     success = false;
   }
-  
+
   return success;
 }
 
@@ -541,7 +541,7 @@ boolean playPattern (struct pattern myPattern)
   while (index < myPattern.length)
   {
     str = strtok_r (myPattern.lines[index], " ", &i);
-  
+
     if (4 != strlen(str))
     {
       row = B1111;
@@ -552,37 +552,37 @@ boolean playPattern (struct pattern myPattern)
       {
         row <<= 1;
         row |= ('1' == str[i] ? 0x1 : 0x0);
-      } 
+      }
     }
 
-    
+
     str = strtok_r (NULL, " ", &i);
     strncpy (effect, str, 6);
-    
+
     str = strtok_r (NULL, " ", &i);
     r = atoi (str);
-    
+
     r = r < 0 ? 0: r;
     r = r > 255 ? 255: r;
-    
+
     str = strtok_r (NULL, " ", &i);
     g = atoi (str);
-    
+
     g = g < 0 ? 0: g;
     g = g > 255 ? 255: g;
-    
+
     str = strtok_r (NULL, " ", &i);
     b = atoi (str);
-    
+
     b = b < 0 ? 0: b;
     b = b > 255 ? 255: b;
-    
+
     str = strtok_r (NULL, " ", &i);
     duration = atoi (str);
-    
+
     duration = duration < 1 ? 1: duration;
-    duration = duration > 9999 ? 9999: duration;      
-    
+    duration = duration > 9999 ? 9999: duration;
+
     //only supports three effects at the moment
     if (0 == strcmp(effect, "flash"))
     {
@@ -605,10 +605,10 @@ boolean playPattern (struct pattern myPattern)
        //default: all white for duration
        blinkAllLights (255, 255, 255, duration);
     }
-    
+
     index++;
   }
-  
+
   return success;
 }
 
@@ -623,36 +623,36 @@ void ledWave (byte leds, byte r, byte g, byte b, unsigned long duration)
       {
         strip.setPixelColor (j, r, g, b);
       }
-      
+
       if (leds & 0x2)
       {
         strip.setPixelColor((NUM_LEDS/4) + j, r, g, b);
       }
-      
+
       if (leds & 0x4)
       {
         strip.setPixelColor((NUM_LEDS/2) + j, r, g, b);
       }
-      
+
       if (leds & 0x8)
       {
-        strip.setPixelColor ((3*NUM_LEDS/4) + j, r, g, b); 
+        strip.setPixelColor ((3*NUM_LEDS/4) + j, r, g, b);
       }
-      
+
       strip.show ();
-      
+
       delay (50);
-      
+
       strip.setPixelColor (j, 0, 0, 0);
       strip.setPixelColor((NUM_LEDS/4) + j, 0, 0, 0);
       strip.setPixelColor((NUM_LEDS/2) + j, 0, 0, 0);
-      strip.setPixelColor ((3*NUM_LEDS/4) + j, 0, 0, 0); 
+      strip.setPixelColor ((3*NUM_LEDS/4) + j, 0, 0, 0);
 
-      strip.show ();     
+      strip.show ();
     }
-    
+
   }
-  
+
   setAllLights (0, 0, 0);
 
 }
@@ -665,33 +665,33 @@ void ledSetByRow (byte leds, byte r, byte g, byte b, unsigned long duration)
     {
       strip.setPixelColor (i, r, g, b);
     }
-    
+
     if (leds & 0x2)
     {
       strip.setPixelColor((NUM_LEDS / 4) + i, r, g, b);
     }
-    
+
     if (leds & 0x4)
     {
-     strip.setPixelColor ((2 * NUM_LEDS / 4) + i, r, g, b); 
+     strip.setPixelColor ((2 * NUM_LEDS / 4) + i, r, g, b);
     }
-    
+
     if (leds & 0x8)
     {
-     strip.setPixelColor ((3 * NUM_LEDS / 4) + i, r, g, b); 
+     strip.setPixelColor ((3 * NUM_LEDS / 4) + i, r, g, b);
     }
   }
-  
+
   strip.show ();
-  
+
   delay (duration);
 }
 
 void ledFlash (byte leds, byte r, byte g, byte b, unsigned long duration)
 {
   ledSetByRow (leds, r, g, b, duration);
-  
-  setAllLights (0, 0, 0);  
+
+  setAllLights (0, 0, 0);
 }
 
 void ledAlternate (byte leds, byte r, byte g, byte b, unsigned long duration)
@@ -700,18 +700,18 @@ void ledAlternate (byte leds, byte r, byte g, byte b, unsigned long duration)
   static byte lastG = 0;
   static byte lastB = 0;
   unsigned long start = millis ();
-  
+
   while (duration >= millis () - start)
   {
     ledSetByRow (leds, r, g, b, 50);
     ledSetByRow (leds, lastR, lastG, lastB, 50);
   }
-  
+
   lastR = r;
   lastG = g;
   lastB = b;
-  
-  setAllLights (0, 0, 0);  
+
+  setAllLights (0, 0, 0);
 }
 
 void upperCase (char * buf, int buf_size)
@@ -719,5 +719,5 @@ void upperCase (char * buf, int buf_size)
   for (int i = 0; i < buf_size && buf[i]; i++)
   {
      buf[i] = toupper(buf[i]);
-  } 
+  }
 }

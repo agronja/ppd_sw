@@ -8,15 +8,16 @@
 #include <Adafruit_VS1053.h>
 #include <I2S.h>
 #include <Adafruit_NeoPixel.h>
+#include <NS_Rainbow.h>
 
 const int RESET_BUTTON = A3;
 const int SOUND_BUTTON = A4;
 const int LIGHT_BUTTON = A5;
 const int DONE_PIN = A2;
-const int LED_PIN = 12;
+const int LED_PIN = 14;
 const int NUM_LEDS = 32;
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
+NS_Rainbow strip = NS_Rainbow(NUM_LEDS, LED_PIN);
 #define VS1053_RESET   -1       // unused
 #define VS1053_CS       11     // VS1053 chip select pin (output)
 #define VS1053_DCS     13     // VS1053 Data/command select pin (output)
@@ -215,7 +216,7 @@ void done() {
 
 void setAllLights (int r, int g, int b) {
   for (int j = 0; j < NUM_LEDS; j++) {
-    strip.setPixelColor(j, r, g, b); //pixel num, r, g, b
+    strip.setColor(j, r, g, b); //pixel num, r, g, b
   }
   strip.show();
 }
@@ -223,7 +224,7 @@ void setAllLights (int r, int g, int b) {
 void setStatusLights(int r, int g, int b, int level) {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < level; j++) {
-      strip.setPixelColor((i*NUM_LEDS/4) + j, r, g, b); //pixel num, r, g, b
+      strip.setColor((i*NUM_LEDS/4) + j, r, g, b); //pixel num, r, g, b
     }
   }
   strip.show();
@@ -621,32 +622,32 @@ void ledWave (byte leds, byte r, byte g, byte b, unsigned long duration)
     for (int j = 0; j < NUM_LEDS / 4; j++) {
       if (leds & 0x1)
       {
-        strip.setPixelColor (j, r, g, b);
+        strip.setColor (j, r, g, b);
       }
 
       if (leds & 0x2)
       {
-        strip.setPixelColor((NUM_LEDS/4) + j, r, g, b);
+        strip.setColor((NUM_LEDS/4) + j, r, g, b);
       }
 
       if (leds & 0x4)
       {
-        strip.setPixelColor((NUM_LEDS/2) + j, r, g, b);
+        strip.setColor((NUM_LEDS/2) + j, r, g, b);
       }
 
       if (leds & 0x8)
       {
-        strip.setPixelColor ((3*NUM_LEDS/4) + j, r, g, b);
+        strip.setColor ((3*NUM_LEDS/4) + j, r, g, b);
       }
 
       strip.show ();
 
       delay (50);
 
-      strip.setPixelColor (j, 0, 0, 0);
-      strip.setPixelColor((NUM_LEDS/4) + j, 0, 0, 0);
-      strip.setPixelColor((NUM_LEDS/2) + j, 0, 0, 0);
-      strip.setPixelColor ((3*NUM_LEDS/4) + j, 0, 0, 0);
+      strip.setColor (j, 0, 0, 0);
+      strip.setColor((NUM_LEDS/4) + j, 0, 0, 0);
+      strip.setColor((NUM_LEDS/2) + j, 0, 0, 0);
+      strip.setColor ((3*NUM_LEDS/4) + j, 0, 0, 0);
 
       strip.show ();
     }
@@ -663,22 +664,22 @@ void ledSetByRow (byte leds, byte r, byte g, byte b, unsigned long duration)
   {
     if (leds & 0x1)
     {
-      strip.setPixelColor (i, r, g, b);
+      strip.setColor (i, r, g, b);
     }
 
     if (leds & 0x2)
     {
-      strip.setPixelColor((NUM_LEDS / 4) + i, r, g, b);
+      strip.setColor((NUM_LEDS / 4) + i, r, g, b);
     }
 
     if (leds & 0x4)
     {
-     strip.setPixelColor ((2 * NUM_LEDS / 4) + i, r, g, b);
+     strip.setColor ((2 * NUM_LEDS / 4) + i, r, g, b);
     }
 
     if (leds & 0x8)
     {
-     strip.setPixelColor ((3 * NUM_LEDS / 4) + i, r, g, b);
+     strip.setColor ((3 * NUM_LEDS / 4) + i, r, g, b);
     }
   }
 

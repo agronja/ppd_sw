@@ -10,9 +10,9 @@
 #include <Adafruit_NeoPixel.h>
 #include <NS_Rainbow.h>
 
-const int RESET_BUTTON = A3;
-const int SOUND_BUTTON = A4;
-const int LIGHT_BUTTON = A5;
+const int FREQUENCY_BUTTON = 15;
+const int SOUND_BUTTON = 16;
+const int LIGHT_BUTTON = 17;
 const int DONE_PIN = A2;
 const int LED_PIN = 14;
 const int NUM_LEDS = 32;
@@ -59,7 +59,7 @@ void setup() {
   strip.begin();
 
   setAllLights(0, 0, 0);
-  pinMode(RESET_BUTTON, INPUT_PULLUP);
+  pinMode(FREQUENCY_BUTTON, INPUT_PULLUP);
   pinMode(SOUND_BUTTON, INPUT_PULLUP);
   pinMode(LIGHT_BUTTON, INPUT_PULLUP);
   pinMode(DONE_PIN, OUTPUT);
@@ -67,7 +67,7 @@ void setup() {
 
   randomSeed(analogRead(0));
 
-   if (digitalRead(RESET_BUTTON) == LOW) {
+   if (digitalRead(FREQUENCY_BUTTON) == LOW) {
     configuration();
 
   }
@@ -162,7 +162,7 @@ void go() {
       goLights = true;
     } else if (digitalRead(SOUND_BUTTON) == LOW) {
       goSound = true;
-    } else if (digitalRead(RESET_BUTTON) == LOW) {
+    } else if (digitalRead(FREQUENCY_BUTTON) == LOW) {
       goLights = true;
       goSound = true;
     }
@@ -275,7 +275,7 @@ void configInterval() {
   setStatusLights(255, 0, 0, interval);
 
   unsigned long start = millis();
-  while (HIGH == digitalRead(RESET_BUTTON)) {
+  while (HIGH == digitalRead(FREQUENCY_BUTTON)) {
     if (millis() - start >= 3 * SECOND) {
       interval += 1 % 8;
       setAllLights(0, 0, 0);
